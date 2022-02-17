@@ -131,7 +131,7 @@ static struct aws_cli_option s_long_options[] = {
  * @param[out] app_ctx: struct to store all of the arguments
  */
 static void s_parse_options(int argc, char **argv, const char *subcommand, struct app_ctx *ctx) {
-    ctx->proxy_port = DEFAULT_PROXY_PORT;
+    ctx->proxy_port = 0;
     ctx->region = NULL;
     ctx->aws_access_key_id = NULL;
     ctx->aws_secret_access_key = NULL;
@@ -267,6 +267,9 @@ static void init_kms_client(struct app_ctx *app_ctx, struct aws_credentials **cr
     struct aws_socket_endpoint endpoint = {.address = DEFAULT_PARENT_CID, .port = app_ctx->proxy_port};
     struct aws_nitro_enclaves_kms_client_configuration configuration = {
         .allocator = app_ctx->allocator, .endpoint = &endpoint, .domain = AWS_SOCKET_VSOCK, .region = app_ctx->region};
+    if (app_ctx->proxy_port == 0) {
+        configuration.endpoint = NULL;
+    }
 
     /* Sets the AWS credentials and creates a KMS client with them. */
     struct aws_credentials *new_credentials = aws_credentials_new(
